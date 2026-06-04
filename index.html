@@ -3,84 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <title>AI 社群分析中心</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #F9F8F6; --surface: #FFFFFF; --purple: #7C62A3; --text: #1C1917; --text3: #A09990; --border: #E6E1DA;
-  }
-  body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); display: flex; margin: 0; }
+  :root { --bg: #F9F8F6; --text: #1C1917; --purple: #7C62A3; --border: #E6E1DA; }
+  body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; }
   .sidebar { width: 220px; height: 100vh; background: var(--text); color: #fff; padding: 20px; position: fixed; }
   .main { margin-left: 220px; padding: 40px; width: calc(100% - 220px); }
-  .card { background: var(--surface); padding: 24px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 24px; }
-  .nav-item { padding: 12px; cursor: pointer; color: #aaa; font-size: 14px; }
-  .nav-item.active { color: #fff; border-left: 4px solid var(--purple); background: rgba(124,98,163,0.2); }
+  .card { background: #fff; padding: 24px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+  .nav-item { padding: 12px; cursor: pointer; color: #aaa; font-size: 14px; border-radius: 8px; transition: 0.2s; }
+  .nav-item.active { color: #fff; background: var(--purple); }
   .page { display: none; } .page.active { display: block; }
-  .upload-area { border: 2px dashed #ccc; padding: 60px; text-align: center; cursor: pointer; border-radius: 12px; }
   h1 { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 20px; }
+  .upload-area { border: 2px dashed var(--border); padding: 40px; text-align: center; cursor: pointer; border-radius: 12px; margin-top: 20px; }
 </style>
 </head>
 <body>
 <div class="sidebar">
   <h1>分析中心</h1>
   <div class="nav-item active" onclick="showPage('dashboard')">總覽儀表板</div>
-  <div class="nav-item" onclick="showPage('upload')">上傳數據</div>
+  <div class="nav-item" onclick="showPage('upload')">上傳 CSV</div>
 </div>
 <div class="main">
   <div id="page-dashboard" class="page active">
-    <div class="card"><h2 id="statsTitle">請上傳資料開始分析</h2><div id="result"></div></div>
+    <div class="card"><h2 id="statsTitle">數據看板</h2><div id="result">請上傳資料以開始分析...</div></div>
   </div>
   <div id="page-upload" class="page">
-    <div class="card"><div class="upload-area" id="uploadArea">拖曳 CSV 檔案至此<br>或點擊選取檔案</div><input type="file" id="fileInput" style="display:none"></div>
+    <div class="card">
+        <h3>資料匯入</h3>
+        <div class="upload-area" id="uploadArea">拖曳 CSV 到這裡</div>
+        <input type="file" id="fileInput" style="display:none">
+    </div>
   </div>
 </div>
 
 <script>
-// 強制銷毀並重新解析邏輯（同前版功能）
-function parseCSV(text) {
-  const lines = [], row = [], cur = '', inQ = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (c === '"') { if (inQ && text[i+1] === '"') { cur += '"'; i++; } else { inQ = !inQ; } }
-    else if (c === ',' && !inQ) { row.push(cur.trim()); cur = ''; }
-    else if ((c === '\r' || c === '\n') && !inQ) {
-      if (c === '\r' && text[i+1] === '\n') i++;
-      row.push(cur.trim()); if(row.some(x=>x)) lines.push(row);
-      row = []; cur = '';
-    } else { cur += c; }
-  }
-  const headers = lines[0].map(h => h.replace(/^"|"$/g,'').trim());
-  return lines.slice(1).map(line => {
-    const obj = {}; headers.forEach((h, i) => obj[h] = line[i] || '');
-    return obj;
-  });
-}
-
-function processData(rawRows) {
-  return rawRows.map(r => {
-    // 優先選非網址欄位
-    let title = (r['標題'] || r['說明'] || '未命名').trim();
-    if (title.includes('http')) title = '內容摘要';
-    return { title: title.substring(0, 20), reach: parseFloat(r['觸及人數'] || r['觸及'] || 0) };
-  }).filter(r => r.reach > 0);
+// 核心解析邏輯：強制過濾亂碼與網址
+function parseAndAnalyze(text) {
+    const lines = text.split('\n');
+    const headers = lines[0].split(',');
+    const results = lines.slice(1).map(line => {
+        const row = line.split(',');
+        let title = "未命名";
+        // 搜尋標題欄位
+        headers.forEach((h, i) => {
+            if (h.includes('標題') || h.includes('說明')) {
+                if (row[i] && !row[i].includes('http')) title = row[i];
+            }
+        });
+        return { title: title.replace(/['"]+/g, ''), reach: parseFloat(row[2] || 0) };
+    }).filter(r => r.reach > 0);
+    return results;
 }
 
 document.getElementById('uploadArea').addEventListener('click', () => document.getElementById('fileInput').click());
 document.getElementById('fileInput').addEventListener('change', e => {
-  const reader = new FileReader();
-  reader.onload = e => {
-    const data = processData(parseCSV(e.target.result));
-    document.getElementById('result').innerText = `已成功分析 ${data.length} 篇貼文！`;
-    document.getElementById('statsTitle').innerText = "數據看板";
-  };
-  reader.readAsText(e.target.files[0]);
+    const reader = new FileReader();
+    reader.onload = e => {
+        const data = parseAndAnalyze(e.target.result);
+        document.getElementById('result').innerText = `成功分析 ${data.length} 筆貼文，總觸及：${data.reduce((a,b)=>a+b.reach,0)}`;
+        showPage('dashboard');
+    };
+    reader.readAsText(e.target.files[0]);
 });
 
 function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  event.target.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-'+id).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    event.target.classList.add('active');
 }
 </script>
 </body>
