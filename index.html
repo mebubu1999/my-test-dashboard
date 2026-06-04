@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>社群數據與發文策略分析中心</title>
+<title>AI 社群數據跨期分析中心</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
@@ -26,10 +26,6 @@
     --amber-l: #FBF3E6;
     --blue: #226CA8;
     --blue-l: #EAF2F9;
-    --red: #B23B3B;
-    --red-l: #FDF0F0;
-    --green: #348A43;
-    --green-l: #EDF6F0;
     --r-sm: 8px;
     --r-md: 12px;
     --r-lg: 16px;
@@ -47,25 +43,25 @@
   .nav-item.active { color: #fff; border-left-color: var(--purple); background: rgba(124,98,163,0.2); }
   .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
   .nav-section { font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: .08em; padding: 16px 20px 6px; }
+  
   .main { margin-left: 220px; min-height: 100vh; }
   .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
   .topbar h2 { font-size: 16px; font-weight: 500; }
-  .topbar-right { display: flex; align-items: center; gap: 10px; }
   .content { padding: 28px 32px; }
 
   .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
   .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 16px 18px; }
   .kpi-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
-  .kpi-val   { font-size: 26px; font-weight: 300; color: var(--text); letter-spacing: -.5px; line-height: 1; }
-  .kpi-sub   { font-size: 12px; color: var(--text3); margin-top: 5px; display: flex; align-items: center; gap: 4px; }
+  .kpi-val   { font-size: 24px; font-weight: 300; color: var(--text); letter-spacing: -.5px; line-height: 1; }
+  .kpi-sub   { font-size: 12px; color: var(--text3); margin-top: 5px; }
   
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; margin-bottom: 20px; }
   .card-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
-  .post-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .post-row { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
   .post-row:last-child { border-bottom: none; }
-  .post-rank { font-size: 14px; font-weight: 300; color: var(--text3); flex: 0 0 20px; }
+  .post-rank { font-size: 14px; font-weight: 300; color: var(--text3); flex: 0 0 24px; }
   .post-body { flex: 1; min-width: 0; }
   .post-title { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .post-meta  { font-size: 11px; color: var(--text3); margin-top: 2px; }
@@ -73,62 +69,65 @@
   .insight { border-radius: var(--r-sm); padding: 12px 14px; margin-bottom: 8px; border-left: 3px solid; }
   .insight-title { font-size: 12px; font-weight: 500; margin-bottom: 3px; }
   .insight-body  { font-size: 12px; color: var(--text2); line-height: 1.6; }
-  .insight-s { background: var(--green-l); border-color: var(--teal); }
-  .insight-s .insight-title { color: var(--teal); }
-  .insight-i { background: var(--blue-l);  border-color: var(--blue); }
-  .insight-i .insight-title { color: var(--blue); }
+  .insight-s { background: var(--green-l); border-color: var(--teal); .insight-title { color: var(--teal); } }
+  .insight-i { background: var(--blue-l);  border-color: var(--blue); .insight-title { color: var(--blue); } }
 
-  .upload-area { border: 2px dashed var(--border); border-radius: var(--r-lg); padding: 60px 20px; text-align: center; cursor: pointer; background: var(--surface); }
+  .upload-area { border: 2px dashed var(--border); border-radius: var(--r-lg); padding: 80px 20px; text-align: center; cursor: pointer; background: var(--surface); }
   .upload-area:hover { border-color: var(--purple); background: var(--purple-l); }
   #fileInput { display: none; }
 
-  .strat-hero { background: linear-gradient(135deg, var(--purple-d) 0%, var(--purple) 60%, #9B7FD4 100%); border-radius: var(--r-lg); padding: 28px 32px; color: #fff; margin-bottom: 20px; }
-  .strat-hero h3 { font-size: 20px; font-weight: 500; margin-bottom: 6px; }
-  .strat-hero p  { font-size: 13px; opacity: .75; line-height: 1.6; }
-
-  .strat-section-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: var(--text3); margin: 20px 0 10px; display: flex; align-items: center; gap: 8px; }
-  .strat-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+  .strat-hero { background: linear-gradient(135deg, var(--purple-d) 0%, var(--purple) 60%, #9B7FD4 100%); border-radius: var(--r-lg); padding: 24px 32px; color: #fff; margin-bottom: 20px; }
+  .strat-hero h3 { font-size: 18px; font-weight: 500; margin-bottom: 4px; }
+  .strat-hero p  { font-size: 12px; opacity: .8; }
+  .strat-section-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: var(--text3); margin: 20px 0 10px; }
 
   .calendar-week { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; margin-top: 8px; }
-  .cal-day { border-radius: var(--r-sm); padding: 10px 6px; text-align: center; border: 1px solid var(--border); background: var(--surface); font-size: 11px; }
+  .cal-day { border-radius: var(--r-sm); padding: 10px 4px; text-align: center; border: 1px solid var(--border); background: var(--surface); font-size: 11px; }
   .cal-day .day-name { color: var(--text3); margin-bottom: 4px; }
-  .cal-day .day-reach { font-size: 13px; font-weight: 500; color: var(--text); }
-  .cal-day.cal-best  { background: var(--purple); border-color: var(--purple); }
-  .cal-day.cal-best .day-name  { color: rgba(255,255,255,.6); }
-  .cal-day.cal-best .day-reach { color: #fff; }
-  .cal-day.cal-good  { background: var(--purple-l); border-color: var(--purple); }
-  .cal-day.cal-good .day-reach { color: var(--purple); }
+  .cal-day .day-reach { font-size: 12px; font-weight: 500; }
+  .cal-day.cal-best  { background: var(--purple); border-color: var(--purple); color: #fff; .day-name { color: rgba(255,255,255,0.7); } }
+  .cal-day.cal-good  { background: var(--purple-l); border-color: var(--purple); color: var(--purple); }
 
   .page { display: none; }
   .page.active { display: block; }
-  .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
+  .empty-state { text-align: center; padding: 80px 20px; color: var(--text3); }
+  
+  .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); margin-bottom: 8px; font-size: 13px; }
 </style>
 </head>
 <body>
 
 <nav class="sidebar">
   <div class="sidebar-logo">
-    <h1>社群數據<br>全自動分析中心</h1>
-    <p>FB Performance Dashboard</p>
+    <h1>社群數據<br>跨期分析中心</h1>
+    <p>FB Performance Hub</p>
   </div>
   <div class="sidebar-nav">
-    <div class="nav-section">數據分析</div>
+    <div class="nav-section">分析</div>
     <div class="nav-item active" onclick="showPage('dashboard')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      <span>社群總覽儀表板</span>
+      <span>總覽儀表板</span>
     </div>
     <div class="nav-item" onclick="showPage('strategy')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      <span>最佳發文窗口指南</span>
+      <span>發文策略建議</span>
+    </div>
+    <div class="nav-item" onclick="showPage('compare')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>跨期比對</span>
     </div>
     <div class="nav-item" onclick="showPage('posts')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      <span>完整爆文排行榜</span>
+      <span>貼文排行</span>
     </div>
-    <div class="nav-section">數據管理</div>
+    <div class="nav-section">資料</div>
     <div class="nav-item" onclick="showPage('upload')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-      <span>上傳新數據 (CSV)</span>
+      <span>上傳新數據</span>
+    </div>
+    <div class="nav-item" onclick="showPage('history')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>歷史記錄</span>
     </div>
   </div>
 </nav>
@@ -137,33 +136,33 @@
   <div class="topbar">
     <h2 id="pageTitle">總覽儀表板</h2>
     <div class="topbar-right">
-      <span id="currentPeriod" style="font-size:12px;color:var(--text3);">尚未上傳數據</span>
+      <span id="currentPeriod" style="font-size:12px;color:var(--text3);">尚未匯入數據</span>
     </div>
   </div>
 
   <div class="content">
     <div id="emptyContainer" class="card empty-state">
       <h3>目前網頁內沒有任何數據資料</h3>
-      <p style="margin-top:8px;font-size:13px;color:var(--text2);">本分析工具不保留、不上傳任何資料。請先至左側點選「上傳新數據」，將 FB 後台匯出的 CSV 放進來。</p>
+      <p style="margin-top:8px;font-size:13px;color:var(--text2);">請先至選單點選「上傳新數據」，將您從臉書後台下載的 CSV 放進來。</p>
     </div>
 
     <div id="mainAppContent" style="display:none;">
       <!-- Dashboard Page -->
-      <div id="page-dashboard" class="page">
+      <div id="page-dashboard" class="page active">
         <div class="kpi-grid" id="kpiGrid"></div>
         <div class="grid2">
           <div class="card" style="grid-column: span 2;">
-            <div class="card-title" id="trendTitle">月度趨勢圖</div>
-            <div style="height:240px;"><canvas id="trendChart"></canvas></div>
+            <div class="card-title" id="trendTitle">趨勢變化圖</div>
+            <div style="height:220px;"><canvas id="trendChart"></canvas></div>
           </div>
         </div>
         <div class="grid2">
           <div class="card">
-            <div class="card-title">成效最優貼文 Top 5</div>
+            <div class="card-title">成效最優前 5 名</div>
             <div id="topReachList"></div>
           </div>
           <div class="card">
-            <div class="card-title">數據洞察簡報</div>
+            <div class="card-title">AI 社群數據簡報洞察</div>
             <div id="insightsList"></div>
           </div>
         </div>
@@ -174,17 +173,33 @@
         <div id="stratContent"></div>
       </div>
 
+      <!-- Compare Page -->
+      <div id="page-compare" class="page">
+        <div class="card">
+          <div class="card-title">跨月份數據對比</div>
+          <div style="height:260px;"><canvas id="compareChart"></canvas></div>
+        </div>
+      </div>
+
       <!-- Posts Page -->
       <div id="page-posts" class="page">
         <div class="grid2">
           <div class="card">
-            <div class="card-title" id="allTopReachTitle">成效排行</div>
+            <div class="card-title" id="allTopReachTitle">成效總量排行</div>
             <div id="allTopReach"></div>
           </div>
           <div class="card">
-            <div class="card-title">分享次數排行</div>
+            <div class="card-title">轉發分享次數排行</div>
             <div id="allTopShare"></div>
           </div>
+        </div>
+      </div>
+      
+      <!-- History Page -->
+      <div id="page-history" class="page">
+        <div class="card">
+          <div class="card-title">本地歷史快取包</div>
+          <div id="historyList"></div>
         </div>
       </div>
     </div>
@@ -193,8 +208,8 @@
     <div id="page-upload" class="page">
       <div style="max-width:600px;">
         <div class="upload-area" id="uploadArea">
-          <h3>將 FB 後台貼文 CSV 拖曳至此</h3>
-          <p style="margin-top:6px;color:var(--text3);">支援：標準貼文總摘要、短影音(Reels)每日解析報表</p>
+          <h3>將 FB 後台數據 CSV 拖曳至此</h3>
+          <p style="margin-top:8px;color:var(--text3);font-size:13px;">支援全系列：標準貼文摘要報表、短影音 Reels 每日明細報表</p>
           <input type="file" id="fileInput" accept=".csv">
         </div>
       </div>
@@ -203,8 +218,8 @@
 </div>
 
 <script>
-const STORE_KEY = 'universal_social_dash_v5'; 
-let trendChartInst = null; let hourChartInst = null;
+const STORE_KEY = 'universal_complete_dash_v6'; 
+let trendChartInst = null; let hourChartInst = null; let compareChartInst = null;
 
 function loadData() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)); } catch(e) { return null; }
@@ -272,7 +287,7 @@ function processCSVData(rawRows) {
   const max_reach = Math.max(...rows.map(r=>r._reach), 0);
 
   const mMap = {}; rows.forEach(r => { if(!r._month)return; mMap[r._month] = mMap[r._month] || []; mMap[r._month].push(r._reach); });
-  const monthly = Object.entries(mMap).map(([m,arr])=>({ m, avg_reach: arr.reduce((a,b)=>a+b,0)/arr.length }));
+  const monthly = Object.entries(mMap).map(([m,arr])=>({ m, avg_reach: arr.reduce((a,b)=>a+b,0)/arr.length })).sort((a,b)=>parseInt(a.m)-parseInt(b.m));
 
   const top_posts = [...rows].sort((a,b)=>b._reach-a._reach).slice(0,15).map(r=>({ title: r['標題'], reach: r._reach, share: r._share, er: r._er }));
   const dMap = {}; rows.forEach(r => { if(r._dow===undefined||isNaN(r._dow))return; dMap[r._dow] = dMap[r._dow] || []; dMap[r._dow].push(r._reach); });
@@ -281,27 +296,25 @@ function processCSVData(rawRows) {
   const hourAvgs = Object.entries(hMap).map(([h,arr])=>({ h: parseInt(h), avg: arr.reduce((a,b)=>a+b,0)/arr.length })).sort((a,b)=>a.h-b.h);
 
   const insights = [
-    { type: 's', title: isReelsVideo ? '短影音 Reels 模式解析成功' : '一般圖文貼文解析成功', body: `本批數據共計包含 ${total} 個不重複的主題。` },
-    { type: 'i', title: '頂級成效推力', body: `成效最高的一篇主題獲得了高達 ${max_reach.toLocaleString()} ${isReelsVideo?'秒觀看':'觸及人數'}。` }
+    { type: 's', title: isReelsVideo ? '短影音 Reels 跨日整合解析成功' : '一般貼文成效模型建立成功', body: `本批次匯入共涵蓋 ${total} 組不重複數據單元。` },
+    { type: 'i', title: '核心天花板成效值', body: `單篇表現最高斬獲了 ${max_reach.toLocaleString()} ${isReelsVideo?'觀看秒數':'觸及熱度'}。` }
   ];
 
-  return { isReelsVideo, total, avg_reach: Math.round(avg_reach), avg_er: Math.round(avg_er*100)/100, avg_share: Math.round(avg_share*10)/10, max_reach, monthly, top_posts, dowAvgs, hourAvgs, insights };
+  return { isReelsVideo, total, avg_reach: Math.round(avg_reach), avg_er: Math.round(avg_er*100)/100, avg_share: Math.round(avg_share*10)/10, max_reach, monthly, top_posts, dowAvgs, hourAvgs, insights, uploadTime: new Date().toLocaleString() };
 }
 
 function renderDashboard(data) {
   const lblReach = data.isReelsVideo ? '平均觀看時間 (秒)' : '平均觸及人數';
   const lblMax = data.isReelsVideo ? '單篇最高觀看 (秒)' : '單篇最高觸及';
-  const lblChart = data.isReelsVideo ? '月度影片觀看累積趨勢 (秒)' : '月度觸及趨勢圖';
-
-  document.getElementById('trendTitle').textContent = lblChart;
+  document.getElementById('trendTitle').textContent = data.isReelsVideo ? '月度影片觀看累積趨勢 (秒)' : '月度觸及趨勢圖';
   document.getElementById('allTopReachTitle').textContent = data.isReelsVideo ? '觀看秒數排行' : '觸及人數排行';
-  document.getElementById('currentPeriod').textContent = `自訂數據庫 (${data.total} 組內容)`;
+  document.getElementById('currentPeriod').textContent = `自訂上傳數據庫 (${data.total} 筆項目)`;
   
   const kpis = [
     { label: lblReach, val: data.avg_reach.toLocaleString(), sub: '帳號基礎影響力' },
     { label: '平均互動率', val: data.avg_er + '%', sub: '受眾黏著度指標' },
     { label: '平均分享數', val: data.avg_share, sub: '大眾傳播擴散力' },
-    { label: lblMax, val: data.max_reach.toLocaleString(), sub: '爆款極限峰值' }
+    { label: lblMax, val: data.max_reach.toLocaleString(), sub: '爆發上限極限值' }
   ];
   document.getElementById('kpiGrid').innerHTML = kpis.map(k => `
     <div class="kpi-card">
@@ -346,11 +359,11 @@ function renderStrategy(data) {
   }).join('');
 
   document.getElementById('stratContent').innerHTML = `
-    <div class="strat-hero"><h3>最佳發文窗口分析指南</h3><p>系統已自動依據您上傳的數據，彙整成效表現最佳的日期與時間窗口。</p></div>
+    <div class="strat-hero"><h3>最佳發文窗口分析指南</h3><p>大數據已解鎖。提供最符合您現有受眾分布的發文時間建議。</p></div>
     <div class="strat-section-title">星期發文效果熱力圖</div>
     <div class="grid2">
-      <div class="card"><div class="card-title">成效權重表現星期</div><div class="calendar-week">${calHTML}</div></div>
-      <div class="card"><div class="card-title">時段最佳發文窗口分析</div><div style="height:120px;"><canvas id="hourChart"></canvas></div></div>
+      <div class="card"><div class="card-title">成效權重星期分布</div><div class="calendar-week">${calHTML}</div></div>
+      <div class="card"><div class="card-title">24小時最佳發文時段分佈</div><div style="height:120px;"><canvas id="hourChart"></canvas></div></div>
     </div>`;
 
   setTimeout(() => {
@@ -360,6 +373,18 @@ function renderStrategy(data) {
       type: 'bar',
       data: { labels: data.hourAvgs.map(h=>h.h+':00'), datasets: [{ data: data.hourAvgs.map(h=>Math.round(h.avg)), backgroundColor:'#7C62A3', borderRadius:4 }] },
       options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
+    });
+  }, 50);
+}
+
+function renderComparePage(data) {
+  setTimeout(() => {
+    if(compareChartInst) compareChartInst.destroy();
+    const cCtx = document.getElementById('compareChart').getContext('2d');
+    compareChartInst = new Chart(cCtx, {
+      type: 'bar',
+      data: { labels: data.monthly.map(m=>m.m), datasets: [{ label: data.isReelsVideo ? '平均觀看(秒)' : '平均觸及', data: data.monthly.map(m=>Math.round(m.avg_reach)), backgroundColor:'#23856D', borderRadius:4 }] },
+      options: { responsive:true, maintainAspectRatio:false }
     });
   }, 50);
 }
@@ -380,6 +405,19 @@ function renderPostsPage(data) {
   document.getElementById('allTopShare').innerHTML = postListHTML(byShare, '分享次數', 'share');
 }
 
+function renderHistoryPage(data) {
+  document.getElementById('historyList').innerHTML = `
+    <div class="history-item">
+      <div><strong>上傳時間：</strong> ${data.uploadTime || '未知'} ｜ <strong>資料量：</strong> ${data.total} 組主題 (${data.isReelsVideo?'短影音':'圖文貼文'})</div>
+      <button onclick="clearHistory()" style="background:#B23B3B;color:#fff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;">清除快取</button>
+    </div>`;
+}
+
+function clearHistory() {
+  localStorage.removeItem(STORE_KEY);
+  initApp();
+}
+
 document.getElementById('uploadArea').addEventListener('click', () => document.getElementById('fileInput').click());
 document.getElementById('fileInput').addEventListener('change', e => {
   const file = e.target.files[0]; if (!file) return;
@@ -397,6 +435,10 @@ function showPage(id) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   const nav = document.querySelector(`[onclick="showPage('${id}')"]`); if(nav) nav.classList.add('active');
+  
+  // 切換分頁標題
+  const titles = { dashboard: '總覽儀表板', strategy: '發文策略建議', compare: '跨期比對', posts: '貼文排行', upload: '上傳新數據', history: '歷史記錄' };
+  document.getElementById('pageTitle').textContent = titles[id] || '儀表板';
 }
 
 function initApp() {
@@ -404,10 +446,11 @@ function initApp() {
   if (data) {
     document.getElementById('emptyContainer').style.display = 'none';
     document.getElementById('mainAppContent').style.display = 'block';
-    renderDashboard(data); renderStrategy(data); renderPostsPage(data);
+    renderDashboard(data); renderStrategy(data); renderComparePage(data); renderPostsPage(data); renderHistoryPage(data);
   } else {
     document.getElementById('emptyContainer').style.display = 'block';
     document.getElementById('mainAppContent').style.display = 'none';
+    document.getElementById('currentPeriod').textContent = '尚未匯入數據';
   }
 }
 initApp();
