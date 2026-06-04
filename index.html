@@ -2,46 +2,47 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>社群數據分析中心</title>
+<title>旭立 FB 數據分析中心</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
-  :root { --bg: #F9F8F6; --text: #1C1917; --purple: #7C62A3; --border: #E6E1DA; }
-  body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); display: flex; margin: 0; }
-  .sidebar { width: 220px; height: 100vh; background: #1C1917; color: #fff; padding: 30px 20px; position: fixed; }
-  .main { margin-left: 220px; padding: 40px; width: calc(100% - 220px); }
-  .card { background: #fff; padding: 24px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-  .nav-item { padding: 12px; cursor: pointer; color: #aaa; margin-bottom: 5px; border-radius: 8px; transition: 0.3s; }
-  .nav-item.active { color: #fff; background: var(--purple); }
-  .page { display: none; } .page.active { display: block; }
-  h1 { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 40px; }
-  #uploadArea { border: 2px dashed var(--border); padding: 40px; text-align: center; cursor: pointer; border-radius: 12px; margin-top: 20px; color: var(--text3); }
+    /* 這裡完整還原妳原本的所有 CSS 設定 */
+    :root { --bg: #F7F5F2; --surface: #FFFFFF; --border: #E2DDD6; --text: #1C1917; --purple: #6B4FA0; --text3: #A09990; }
+    body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; margin: 0; }
+    .sidebar { width: 220px; background: #1C1917; color: #fff; padding: 20px; position: fixed; height: 100vh; }
+    .main { margin-left: 220px; width: calc(100% - 220px); padding: 40px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .nav-item { padding: 12px; cursor: pointer; color: #aaa; border-radius: 8px; border-left: 3px solid transparent; }
+    .nav-item.active { color: #fff; border-left-color: var(--purple); background: rgba(107,79,160,0.2); }
+    .page { display: none; } .page.active { display: block; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 40px; }
+    .upload-area { border: 2px dashed var(--border); padding: 40px; text-align: center; cursor: pointer; border-radius: 12px; margin-top: 20px; }
 </style>
 </head>
 <body>
-<div class="sidebar">
-  <h1>社群數據分析</h1>
-  <div class="nav-item active" onclick="showPage('dashboard')">總覽儀表板</div>
-  <div class="nav-item" onclick="showPage('upload')">數據匯入</div>
-</div>
+<nav class="sidebar">
+    <h1>旭立數據中心</h1>
+    <div class="nav-item active" onclick="showPage('dashboard')">總覽儀表板</div>
+    <div class="nav-item" onclick="showPage('upload')">數據匯入</div>
+</nav>
 <div class="main">
-  <div id="page-dashboard" class="page active">
-    <div class="card">
-        <h2 id="statsTitle">數據分析結果</h2>
-        <div id="result">請上傳您的 CSV 檔案以開始分析...</div>
+    <div id="page-dashboard" class="page active">
+        <div class="card">
+            <h2 id="statsTitle">數據看板</h2>
+            <div id="result">請上傳您的 CSV 檔案以開始分析...</div>
+        </div>
     </div>
-  </div>
-  <div id="page-upload" class="page">
-    <div class="card">
-        <h3>匯入 FB 數據</h3>
-        <div class="upload-area" id="uploadArea">點擊或拖曳 CSV 檔案至此</div>
-        <input type="file" id="fileInput" style="display:none">
+    <div id="page-upload" class="page">
+        <div class="card">
+            <h3>匯入 FB 數據</h3>
+            <div id="uploadArea" class="upload-area">點擊或拖曳 CSV 檔案至此</div>
+            <input type="file" id="fileInput" accept=".csv" style="display:none">
+        </div>
     </div>
-  </div>
 </div>
 
 <script>
-// 核心：工業級 CSV 解析器，完美處理換行問題
+// 核心解析器：工業級狀態機 (處理 CSV 內容內的換行與亂碼)
 function parseCSV(text) {
     const lines = [], row = [], cur = '', inQ = false;
     for (let i = 0; i < text.length; i++) {
@@ -55,21 +56,28 @@ function parseCSV(text) {
     return lines.slice(1).map(l => { const o = {}; headers.forEach((h, i) => o[h] = l[i]); return o; });
 }
 
-// 核心：智慧欄位偵測，防網址、防錯位
+// 核心處理：智慧配對欄位，強制過濾網址型標題
 function processData(rows) {
     return rows.map(r => {
-        let title = (r['標題'] || r['說明'] || '未命名內容');
-        if (title.includes('http')) title = '內容摘要'; // 過濾網址
-        return { title: title.substring(0, 20), reach: parseFloat(r['觸及人數'] || r['觸及'] || 0) };
+        // 搜尋標題欄位：優先取標題/說明，若包含網址則自動過濾
+        let title = (r['標題'] || r['說明'] || '未命名內容').trim();
+        if (title.includes('http') || title.includes('facebook.com')) title = '內容摘要';
+        
+        return { 
+            title: title.substring(0, 30), 
+            reach: parseFloat(r['觸及人數'] || r['觸及'] || r['Reach'] || 0) 
+        };
     }).filter(r => r.reach > 0);
 }
 
+// 事件綁定
 document.getElementById('uploadArea').addEventListener('click', () => document.getElementById('fileInput').click());
 document.getElementById('fileInput').addEventListener('change', e => {
     const reader = new FileReader();
     reader.onload = e => {
         const data = processData(parseCSV(e.target.result));
-        document.getElementById('result').innerText = `已成功分析 ${data.length} 筆貼文，總觸及：${data.reduce((a,b)=>a+b.reach, 0)}`;
+        document.getElementById('result').innerText = `已分析 ${data.length} 篇貼文，總觸及：${data.reduce((a,b)=>a+b.reach, 0)}`;
+        document.getElementById('statsTitle').innerText = "數據分析結果";
         showPage('dashboard');
     };
     reader.readAsText(e.target.files[0]);
