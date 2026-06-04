@@ -109,11 +109,11 @@
     <div class="nav-section">分析</div>
     <div class="nav-item active" onclick="showPage('dashboard')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      <span>總覽儀表板</span>
+      <span>社群總覽儀表板</span>
     </div>
     <div class="nav-item" onclick="showPage('strategy')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      <span>發文策略建議</span>
+      <span>最佳發文窗口指南</span>
     </div>
     <div class="nav-item" onclick="showPage('compare')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -121,12 +121,12 @@
     </div>
     <div class="nav-item" onclick="showPage('posts')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      <span>貼文排行</span>
+      <span>完整爆文排行榜</span>
     </div>
     <div class="nav-section">資料</div>
     <div class="nav-item" onclick="showPage('upload')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-      <span>上傳新數據</span>
+      <span>上傳新數據 (CSV)</span>
     </div>
     <div class="nav-item" onclick="showPage('history')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -215,7 +215,7 @@
 </div>
 
 <script>
-const STORE_KEY = 'universal_complete_dash_v6'; 
+const STORE_KEY = 'universal_complete_dash_v7_final'; 
 let trendChartInst = null; let hourChartInst = null; let compareChartInst = null;
 
 function loadData() {
@@ -223,7 +223,9 @@ function loadData() {
 }
 
 function parseCSV(text) {
-  const lines = text.trim().split('\n'); if (lines.length < 2) return [];
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  if (lines.length < 2) return [];
+  
   const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g,'').trim());
   return lines.slice(1).map(line => {
     const vals = []; let cur = ''; let inQ = false;
@@ -235,7 +237,7 @@ function parseCSV(text) {
     vals.push(cur.trim());
     const obj = {}; headers.forEach((h, i) => obj[h] = (vals[i]||'').replace(/^"|"$/g,'').trim());
     return obj;
-  }).filter(r => r['標題']);
+  });
 }
 
 function n(v) { return parseFloat(String(v).replace(/,/g,'')) || 0; }
@@ -244,40 +246,73 @@ function processCSVData(rawRows) {
   let isReelsVideo = false;
   let rows = [];
 
-  if (rawRows.length > 0 && !rawRows[0]['觸及人數'] && rawRows[0]['觀看秒']) {
+  // 🧠 【終極防卡死邏輯：自動修補標題】
+  rawRows.forEach(r => {
+    // 如果「標題」是空的，自動用「說明」或「貼文」補位，再沒有就寫「未命名貼文」
+    let rawTitle = r['標題'] || r['說明'] || r['貼文內容'] || r['貼文'] || '';
+    r._cleanTitle = rawTitle.split('\n')[0].substring(0, 40).trim() || '（未命名貼文/影片）';
+  });
+
+  // 判斷報表類型
+  if (rawRows.length > 0 && !rawRows.some(r => r['觸及人數']) && rawRows.some(r => r['觀看秒'])) {
     isReelsVideo = true;
     const grouped = {};
     rawRows.forEach(r => {
-      const title = r['標題']; if (!title) return;
+      const title = r._cleanTitle;
       if (!grouped[title]) {
-        grouped[title] = { title, watch_sec: 0, mood: 0, comment: 0, share: 0, time: r['發佈時間'] || '' };
+        grouped[title] = { title, watch_sec: 0, mood: 0, comment: 0, share: 0, time: r['發佈時間'] || r['發布時間'] || '' };
       }
       grouped[title].watch_sec += n(r['觀看秒']);
-      grouped[title].mood += n(r['心情數']);
-      grouped[title].comment += n(r['留言']);
-      grouped[title].share += n(r['分享']);
+      grouped[title].mood += n(r['心情數'] || r['心情'] || 0);
+      grouped[title].comment += n(r['留言'] || 0);
+      grouped[title].share += n(r['分享'] || 0);
     });
     rows = Object.values(grouped).map(g => ({
-      '標題': g.title,
-      '觸及人數': g.watch_sec,
-      '心情、留言和分享次數': g.mood + g.comment + g.share,
-      '分享': g.share,
-      '發佈時間': g.time
+      _title: g.title,
+      _reach: g.watch_sec,
+      _engage: g.mood + g.comment + g.share,
+      _share: g.share,
+      _time: g.time
     }));
   } else {
-    rows = rawRows.filter(r => r['觸及人數']);
+    // 標準貼文，過濾出只要有數據發佈時間或不為空的項目
+    rawRows.forEach(r => {
+      r._title = r._cleanTitle;
+      r._reach = n(r['觸及人數'] || r['觸及'] || r['Reach'] || 0);
+      r._engage = n(r['心情、留言和分享次數'] || r['互動次數'] || r['Engagement'] || 0);
+      r._share = n(r['分享'] || r['Shares'] || 0);
+      r._time = r['發佈時間'] || r['發布時間'] || '';
+    });
+    rows = rawRows.filter(r => r._reach > 0 || r._title !== '（未命名貼文/影片）');
   }
 
+  // 統一解析日期與時間
   rows.forEach(r => {
-    r._reach = n(r['觸及人數']); r._engage = n(r['心情、留言和分享次數']||0); r._share = n(r['分享']||0);
     r._er = r._reach > 0 ? (r._engage / r._reach) * 100 : 0;
     try {
-      const raw = r['發佈時間'] || ''; const parts = raw.split(' ')[0].split('/');
-      if (parts.length === 3) { r._month = parseInt(parts[0])+'月'; r._hour = parseInt((raw.split(' ')[1]||'0').split(':')[0]); r._dow = new Date(`${parts[2]}-${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}`).getDay(); }
+      const raw = r._time;
+      const datePart = raw.split(' ')[0];
+      const parts = datePart.includes('/') ? datePart.split('/') : datePart.split('-');
+      if (parts.length === 3) {
+        // 兼容 MM/DD/YYYY 或 YYYY-MM-DD
+        let m = parts[0].length <= 2 ? parseInt(parts[0]) : parseInt(parts[1]);
+        r._month = m + '月';
+        
+        let timePart = raw.split(' ')[1] || '00:00';
+        r._hour = parseInt(timePart.split(':')[0]);
+        
+        // 算出星期幾
+        let y = parts[2].length === 4 ? parts[2] : parts[0];
+        let d = parts[1].length <= 2 ? parts[1] : parts[2];
+        if(String(y).length !== 4) { y = parts[2]; d = parts[1]; m = parts[0]; }
+        r._dow = new Date(`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`).getDay();
+      }
     } catch(e){}
   });
 
   const total = rows.length;
+  if(total === 0) return null;
+
   const avg_reach = rows.reduce((s,r)=>s+r._reach,0)/total;
   const avg_er = rows.reduce((s,r)=>s+r._er,0)/total;
   const avg_share = rows.reduce((s,r)=>s+r._share,0)/total;
@@ -286,15 +321,15 @@ function processCSVData(rawRows) {
   const mMap = {}; rows.forEach(r => { if(!r._month)return; mMap[r._month] = mMap[r._month] || []; mMap[r._month].push(r._reach); });
   const monthly = Object.entries(mMap).map(([m,arr])=>({ m, avg_reach: arr.reduce((a,b)=>a+b,0)/arr.length })).sort((a,b)=>parseInt(a.m)-parseInt(b.m));
 
-  const top_posts = [...rows].sort((a,b)=>b._reach-a._reach).slice(0,15).map(r=>({ title: r['標題'], reach: r._reach, share: r._share, er: r._er }));
+  const top_posts = [...rows].sort((a,b)=>b._reach-a._reach).slice(0,15).map(r=>({ title: r._title, reach: r._reach, share: r._share, er: r._er }));
   const dMap = {}; rows.forEach(r => { if(r._dow===undefined||isNaN(r._dow))return; dMap[r._dow] = dMap[r._dow] || []; dMap[r._dow].push(r._reach); });
   const dowNames = ['日','一','二','三','四','五','六']; const dowAvgs = Object.entries(dMap).map(([d,arr])=>({ name: dowNames[parseInt(d)], avg: arr.reduce((a,b)=>a+b,0)/arr.length }));
   const hMap = {}; rows.forEach(r => { if(r._hour===undefined||isNaN(r._hour))return; hMap[r._hour] = hMap[r._hour] || []; hMap[r._hour].push(r._reach); });
   const hourAvgs = Object.entries(hMap).map(([h,arr])=>({ h: parseInt(h), avg: arr.reduce((a,b)=>a+b,0)/arr.length })).sort((a,b)=>a.h-b.h);
 
   const insights = [
-    { type: 's', title: isReelsVideo ? '短影音 Reels 跨日整合解析成功' : '一般貼文成效模型建立成功', body: `本批次匯入共涵蓋 ${total} 組不重複數據單元。` },
-    { type: 'i', title: '核心天花板成效值', body: `單篇表現最高斬獲了 ${max_reach.toLocaleString()} ${isReelsVideo?'觀看秒數':'觸及熱度'}。` }
+    { type: 's', title: isReelsVideo ? '短影音 Reels 模式完美解析' : '標準貼文成效模型建立成功', body: `本批次共成功抓取了 ${total} 篇不重複的發文明細。` },
+    { type: 'i', title: '頂級成效峰值點', body: `成效最高的一篇內容斬獲了高達 ${max_reach.toLocaleString()} ${isReelsVideo?'秒觀看時間':'觸及人數'}。` }
   ];
 
   return { isReelsVideo, total, avg_reach: Math.round(avg_reach), avg_er: Math.round(avg_er*100)/100, avg_share: Math.round(avg_share*10)/10, max_reach, monthly, top_posts, dowAvgs, hourAvgs, insights, uploadTime: new Date().toLocaleString() };
@@ -420,28 +455,25 @@ function handleFile(file) {
   const reader = new FileReader();
   reader.onload = evt => {
     const rows = parseCSV(evt.target.result); if(rows.length === 0) return;
-    localStorage.setItem(STORE_KEY, JSON.stringify(processCSVData(rows)));
+    const processed = processCSVData(rows);
+    if(!processed) { alert("此檔案內無有效社群數據數據！"); return; }
+    localStorage.setItem(STORE_KEY, JSON.stringify(processed));
     initApp(); showPage('dashboard');
   };
   reader.readAsText(file, 'UTF-8');
 }
 
-// 🎯 【補上超靈敏電腦滑鼠拖曳監聽】
+// 🎯 【電腦拖曳攔截防護盾】
 const uploadArea = document.getElementById('uploadArea');
 if(uploadArea) {
   uploadArea.addEventListener('click', () => document.getElementById('fileInput').click());
-  
-  // 阻止瀏覽器預設開啟檔案的調皮動作
   window.addEventListener('dragover', e => e.preventDefault(), false);
   window.addEventListener('drop', e => e.preventDefault(), false);
-
   uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); }, false);
   uploadArea.addEventListener('dragleave', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); }, false);
   uploadArea.addEventListener('drop', e => {
-    e.preventDefault();
-    uploadArea.classList.remove('dragover');
-    const files = e.dataTransfer.files;
-    if (files.length > 0) { handleFile(files[0]); }
+    e.preventDefault(); uploadArea.classList.remove('dragover');
+    const files = e.dataTransfer.files; if (files.length > 0) { handleFile(files[0]); }
   }, false);
 }
 
@@ -453,7 +485,7 @@ function showPage(id) {
   document.getElementById('page-' + id).classList.add('active');
   const nav = document.querySelector(`[onclick="showPage('${id}')"]`); if(nav) nav.classList.add('active');
   
-  const titles = { dashboard: '總覽儀表板', strategy: '發文策略建議', compare: '跨期比對', posts: '貼文排行', upload: '上傳新數據', history: '歷史記錄' };
+  const titles = { dashboard: '社群總覽儀表板', strategy: '最佳發文窗口指南', compare: '跨期比對', posts: '完整爆文排行榜', upload: '上傳新數據', history: '歷史記錄' };
   document.getElementById('pageTitle').textContent = titles[id] || '儀表板';
 }
 
