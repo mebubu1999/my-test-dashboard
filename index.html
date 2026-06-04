@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 心理學數據與發文策略分析中心</title>
+<title>AI 數據與發文策略分析中心</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
@@ -200,7 +200,7 @@
       <div id="page-posts" class="page">
         <div class="grid2">
           <div class="card">
-            <div class="card-title" id="allTopReachTitle">觸及成效排行</div>
+            <div class="card-title" id="allTopReachTitle">成效排行</div>
             <div id="allTopReach"></div>
           </div>
           <div class="card">
@@ -227,7 +227,8 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const STORE_KEY = 'xuli_clean_rich_data_v3';
+// 換一把全新的鑰匙，徹底切斷舊網頁的 localStorage 記憶
+const STORE_KEY = 'xuli_reels_clean_v4_final'; 
 const TYPE_COLORS = {
   '「乖女兒」日常掙扎與窒息感': '#7C62A3', '「鋼鐵女強人」武裝與孤單': '#CC5A37',
   '「隱形推手」放下自我的空白': '#23856D', '「避難者」推開連結的日常': '#226CA8',
@@ -332,18 +333,17 @@ function processCSVData(rawRows) {
   const hMap = {}; rows.forEach(r => { if(r._hour===undefined||isNaN(r._hour))return; hMap[r._hour] = hMap[r._hour] || []; hMap[r._hour].push(r._reach); });
   const hourAvgs = Object.entries(hMap).map(([h,arr])=>({ h: parseInt(h), avg: arr.reduce((a,b)=>a+b,0)/arr.length })).sort((a,b)=>a.h-b.h);
 
-  // AI 智慧分析洞察文字生成
   const insights = [];
   const bestType = types[0];
   if(bestType && bestType.count > 0) {
-    insights.push({ type:'s', title:`當前最能引發共鳴的受眾側寫：${bestType.name}`, body:`平均成效高達 ${Math.round(bestType.avg_reach).toLocaleString()}，此類受眾在最近的發文中反響最劇烈，建議本週加強此類別文案。` });
+    insights.push({ type:'s', title:`當前最熱門的受眾側寫：${bestType.name}`, body: `平均成效達 ${Math.round(bestType.avg_reach).toLocaleString()}，此類別內容共鳴度最佳。` });
   }
   const highShare = [...types].sort((a,b)=>b.avg_share-a.avg_share)[0];
   if(highShare && highShare.count > 0) {
-    insights.push({ type:'i', title:`最具擴散傳播力的題材：${highShare.name}`, body:`平均每篇能獲得 ${Math.round(highShare.avg_share)} 次轉發分享，這群人在看完後最傾向分享給身邊的朋友。` });
+    insights.push({ type:'i', title:`擴散傳播力最強題材：${highShare.name}`, body: `平均每篇獲得 ${Math.round(highShare.avg_share)} 次分享。` });
   }
   if (isReelsVideo) {
-    insights.push({ type: 'i', title: '短影音 Reels 跨日去重打包完成', body: '系統偵測到短影音每日解析數據，已自動幫同一影片的多天累積成效進行動態加總。' });
+    insights.push({ type: 'i', title: '短影音 Reels 跨日去重加總成功', body: '已將多天重複影片進行完整累積計算。' });
   }
 
   return { isReelsVideo, total, avg_reach: Math.round(avg_reach), avg_er: Math.round(avg_er*100)/100, avg_share: Math.round(avg_share*10)/10, max_reach, monthly, types, top_posts, dowAvgs, hourAvgs, insights };
@@ -353,18 +353,18 @@ function renderDashboard(data) {
   const lblReach = data.isReelsVideo ? '平均觀看時間 (秒)' : '平均觸及人數';
   const lblMax = data.isReelsVideo ? '單篇最高觀看 (秒)' : '單篇最高觸及';
   const lblChart = data.isReelsVideo ? '月度影片觀看熱度 (秒)' : '月度觸及趨勢圖';
-  const lblBars = data.isReelsVideo ? '五大潛在受眾與原型分析 (依觀看秒數)' : '五大潛在受眾與原型分析 (依平均觸及)';
+  const lblBars = data.isReelsVideo ? '五大潛在受眾原型 (依觀看秒數)' : '五大潛在受眾與原型分析 (依觸及)';
 
   document.getElementById('trendTitle').textContent = lblChart;
   document.getElementById('barsTitle').textContent = lblBars;
   document.getElementById('allTopReachTitle').textContent = data.isReelsVideo ? '觀看秒數排行' : '觸及人數排行';
-  document.getElementById('currentPeriod').textContent = `已成功解析數據庫 (${data.total} 個主題)`;
+  document.getElementById('currentPeriod').textContent = `自訂上傳數據庫 (${data.total} 個獨立主題)`;
   
   const kpis = [
-    { label: lblReach, val: data.avg_reach.toLocaleString(), sub: '帳號基礎影響力' },
+    { label: lblReach, val: data.avg_reach.toLocaleString(), sub: '社群基礎影響力' },
     { label: '平均互動率', val: data.avg_er + '%', sub: '受眾黏著度指標' },
-    { label: '平均分享數', val: data.avg_share, sub: '大眾傳播擴散力' },
-    { label: lblMax, val: data.max_reach.toLocaleString(), sub: '爆文潛力極限' }
+    { label: '平均分享數', val: data.avg_share, sub: '大眾擴散傳播力' },
+    { label: lblMax, val: data.max_reach.toLocaleString(), sub: '成效上限極限' }
   ];
   document.getElementById('kpiGrid').innerHTML = kpis.map(k => `
     <div class="kpi-card">
@@ -434,7 +434,7 @@ function renderStrategy(data) {
   }).join('');
 
   document.getElementById('stratContent').innerHTML = `
-    <div class="strat-hero"><h3>五大核心受眾 × 心理學爆文指南</h3><p>系統已自動依據您上傳的數據，為不同受眾進行排定。越上方的受眾，代表目前反響越強烈。</p></div>
+    <div class="strat-hero"><h3>五大核心受眾 × 心理學爆文指南</h3><p>系統已自動排定受眾成效。越上方代表成效越佳。</p></div>
     <div class="strat-section-title">星期發文效果熱力圖</div>
     <div class="grid2">
       <div class="card"><div class="card-title">最適合發文的日期</div><div class="calendar-week">${calHTML}</div></div>
