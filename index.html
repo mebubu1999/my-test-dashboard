@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 數據與發文策略分析中心</title>
+<title>社群數據與發文策略分析中心</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
@@ -53,10 +53,6 @@
   .topbar-right { display: flex; align-items: center; gap: 10px; }
   .content { padding: 28px 32px; }
 
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: var(--r-sm); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text); transition: all .15s; }
-  .btn:hover { background: var(--surface2); }
-  .btn-primary { background: var(--purple); color: #fff; border-color: var(--purple); }
-
   .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
   .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 16px 18px; }
   .kpi-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
@@ -67,27 +63,18 @@
   .card-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 
-  .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
-  .bar-label { font-size: 12px; color: var(--text); flex: 0 0 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .bar-bg { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
-  .bar-val { font-size: 11px; color: var(--text3); flex: 0 0 70px; text-align: right; }
-
   .post-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
   .post-row:last-child { border-bottom: none; }
   .post-rank { font-size: 14px; font-weight: 300; color: var(--text3); flex: 0 0 20px; }
   .post-body { flex: 1; min-width: 0; }
   .post-title { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .post-meta  { font-size: 11px; color: var(--text3); margin-top: 2px; }
-  .tag { display: inline-block; font-size: 10px; font-weight: 500; padding: 1px 7px; border-radius: 999px; margin-left: 5px; }
 
   .insight { border-radius: var(--r-sm); padding: 12px 14px; margin-bottom: 8px; border-left: 3px solid; }
   .insight-title { font-size: 12px; font-weight: 500; margin-bottom: 3px; }
   .insight-body  { font-size: 12px; color: var(--text2); line-height: 1.6; }
   .insight-s { background: var(--green-l); border-color: var(--teal); }
   .insight-s .insight-title { color: var(--teal); }
-  .insight-w { background: var(--amber-l); border-color: var(--amber); }
-  .insight-w .insight-title { color: var(--amber); }
   .insight-i { background: var(--blue-l);  border-color: var(--blue); }
   .insight-i .insight-title { color: var(--blue); }
 
@@ -102,12 +89,6 @@
   .strat-section-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: var(--text3); margin: 20px 0 10px; display: flex; align-items: center; gap: 8px; }
   .strat-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
 
-  .strat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px 20px; margin-bottom: 12px; display: flex; gap: 16px; align-items: flex-start; }
-  .strat-card-icon { width: 40px; height: 40px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-  .strat-card-body { flex: 1; min-width: 0; }
-  .strat-card-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
-  .strat-card-desc  { font-size: 12px; color: var(--text2); line-height: 1.7; }
-
   .calendar-week { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; margin-top: 8px; }
   .cal-day { border-radius: var(--r-sm); padding: 10px 6px; text-align: center; border: 1px solid var(--border); background: var(--surface); font-size: 11px; }
   .cal-day .day-name { color: var(--text3); margin-bottom: 4px; }
@@ -120,8 +101,6 @@
 
   .page { display: none; }
   .page.active { display: block; }
-  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: #fff; padding: 12px 18px; border-radius: var(--r-md); font-size: 13px; z-index: 9999; transform: translateY(60px); opacity: 0; transition: all .3s; }
-  .toast.show { transform: none; opacity: 1; }
   .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
 </style>
 </head>
@@ -129,8 +108,8 @@
 
 <nav class="sidebar">
   <div class="sidebar-logo">
-    <h1>AI 心理學<br>數據分析中心</h1>
-    <p>FB Audience & Content Insight</p>
+    <h1>社群數據<br>全自動分析中心</h1>
+    <p>FB Performance Dashboard</p>
   </div>
   <div class="sidebar-nav">
     <div class="nav-section">數據分析</div>
@@ -140,11 +119,11 @@
     </div>
     <div class="nav-item" onclick="showPage('strategy')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      <span>五大受眾策略建議</span>
+      <span>最佳發文窗口指南</span>
     </div>
     <div class="nav-item" onclick="showPage('posts')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      <span>爆文排行榜</span>
+      <span>完整爆文排行榜</span>
     </div>
     <div class="nav-section">數據管理</div>
     <div class="nav-item" onclick="showPage('upload')">
@@ -165,38 +144,37 @@
   <div class="content">
     <div id="emptyContainer" class="card empty-state">
       <h3>目前網頁內沒有任何數據資料</h3>
-      <p style="margin-top:8px;font-size:13px;color:var(--text2);">這是專屬於您的私密分析工具，資料不會上傳雲端。請先至左側點選「上傳新數據」，將 FB 後台匯出的 CSV 放進來。</p>
+      <p style="margin-top:8px;font-size:13px;color:var(--text2);">本分析工具不保留、不上傳任何資料。請先至左側點選「上傳新數據」，將 FB 後台匯出的 CSV 放進來。</p>
     </div>
 
     <div id="mainAppContent" style="display:none;">
+      <!-- Dashboard Page -->
       <div id="page-dashboard" class="page">
         <div class="kpi-grid" id="kpiGrid"></div>
         <div class="grid2">
-          <div class="card">
+          <div class="card" style="grid-column: span 2;">
             <div class="card-title" id="trendTitle">月度趨勢圖</div>
-            <div style="height:200px;"><canvas id="trendChart"></canvas></div>
-          </div>
-          <div class="card">
-            <div class="card-title" id="barsTitle">五大潛在受眾與原型分析</div>
-            <div id="typeReachBars"></div>
+            <div style="height:240px;"><canvas id="trendChart"></canvas></div>
           </div>
         </div>
         <div class="grid2">
           <div class="card">
-            <div class="card-title">高共鳴爆文 Top 5</div>
+            <div class="card-title">成效最優貼文 Top 5</div>
             <div id="topReachList"></div>
           </div>
           <div class="card">
-            <div class="card-title">AI 情緒觸及洞察</div>
+            <div class="card-title">數據洞察簡報</div>
             <div id="insightsList"></div>
           </div>
         </div>
       </div>
 
+      <!-- Strategy Page -->
       <div id="page-strategy" class="page">
         <div id="stratContent"></div>
       </div>
 
+      <!-- Posts Page -->
       <div id="page-posts" class="page">
         <div class="grid2">
           <div class="card">
@@ -204,13 +182,14 @@
             <div id="allTopReach"></div>
           </div>
           <div class="card">
-            <div class="card-title">分享次數排行 (最具傳播力)</div>
+            <div class="card-title">分享次數排行</div>
             <div id="allTopShare"></div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Upload Page -->
     <div id="page-upload" class="page">
       <div style="max-width:600px;">
         <div class="upload-area" id="uploadArea">
@@ -218,46 +197,17 @@
           <p style="margin-top:6px;color:var(--text3);">支援：標準貼文總摘要、短影音(Reels)每日解析報表</p>
           <input type="file" id="fileInput" accept=".csv">
         </div>
-        <div id="uploadStatus" style="margin-top:16px;"></div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
 <script>
-// 換一把全新的鑰匙，徹底切斷舊網頁的 localStorage 記憶
-const STORE_KEY = 'xuli_reels_clean_v4_final'; 
-const TYPE_COLORS = {
-  '「乖女兒」日常掙扎與窒息感': '#7C62A3', '「鋼鐵女強人」武裝與孤單': '#CC5A37',
-  '「隱形推手」放下自我的空白': '#23856D', '「避難者」推開連結的日常': '#226CA8',
-  '「求勝職人」高成就心理資源': '#B87814', '綜合大眾/其他公告': '#888780'
-};
-
-const STRAT_META = {
-  '「乖女兒」日常掙扎與窒息感': { icon: '🗝️', color: '#7C62A3', bg: '#F1EDF7', hook: '「明明在外面精明幹練，為什麼一接到家裡電話，瞬間變回手足無措的小女孩？」', method: '運用錯位邏輯。將大眾以為的「懂事、孝順」重新定義為「安靜的監牢」，引發深夜共鳴。' },
-  '「鋼鐵女強人」武裝與孤單': { icon: '🛡️', color: '#CC5A37', bg: '#FBF0ED', hook: '「因為看過親人的委屈，妳武裝得無堅不摧。妳以為這叫獨立，卻和柔軟斷了線。」', method: '強調卸下盔甲。不要指責她的強悍，而是溫柔看見強悍背後的「失落」與孤單。' },
-  '「隱形推手」放下自我的空白': { icon: '🌿', color: '#23856D', bg: '#E6F5F1', hook: '「妳習慣把伴侶的夢想、孩子的需求放在前面，直到感到窒息，才發現弄丟了自己的名字。」', method: '讀後賦能。使用「百寶箱、救贖自己」等具有重量感的詞彙，幫習慣犧牲的人找回自我主權。' },
-  '「避難者」推開連結的日常': { icon: '🌊', color: '#226CA8', bg: '#EAF2F9', hook: '「多數心理諮商的目標，並非教妳去解決關係，而是陪妳在安全的距離中，重新學會相愛。」', method: '建立界線安全感。不要逼她立刻和解，改用神話原型告訴她擁有主權是安全的。' },
-  '「求勝職人」高成就心理資源': { icon: '🏆', color: '#B87814', bg: '#FBF0E6', hook: '「人一輩子能學的技能很多，但感受到由心而生、在重要時刻還能成為自己的自由最難。」', method: '職人特質對位。把心理諮商與內在資源挖掘結合，提高高成就者分享意願。' },
-  '綜合大眾/其他公告': { icon: '📝', color: '#888780', bg: '#F3F1ED', hook: '「在各種關係的角色裡，你有有沒有留一個位置給自己？」', method: '大眾核心痛點。用溫潤且具備收藏價值的金句收尾，引發留言行動。' }
-};
-
+const STORE_KEY = 'universal_social_dash_v5'; 
 let trendChartInst = null; let hourChartInst = null;
 
 function loadData() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)); } catch(e) { return null; }
-}
-
-function classifyPost(title) {
-  const t = String(title);
-  if (/乖女兒|懂事|長輩|家庭|平靜|手足無措|小女孩|母親|狗/.test(t)) return '「乖女兒」日常掙扎與窒息感';
-  if (/強悍|武裝|女強人|獨立|受委屈|不摧|示弱|孤單|橡皮筋/.test(t)) return '「鋼鐵女強人」武裝與孤單';
-  if (/推手|伴侶|孩子|需求|夢想|犧牲|付出|名字|枯萎|睡覺/.test(t)) return '「隱形推手」放下自我的空白';
-  if (/避難|逃避|連結|距離|王國|世界|相愛|界線|諮商|貓貓/.test(t)) return '「避難者」推開連結的日常';
-  if (/職人|棒球|WBC|高成就|卓越|技能|自由|資源|核心|翻滾/.test(t)) return '「求勝職人」高成就心理資源';
-  return '綜合大眾/其他公告';
 }
 
 function parseCSV(text) {
@@ -308,7 +258,7 @@ function processCSVData(rawRows) {
 
   rows.forEach(r => {
     r._reach = n(r['觸及人數']); r._engage = n(r['心情、留言和分享次數']||0); r._share = n(r['分享']||0);
-    r._er = r._reach > 0 ? (r._engage / r._reach) * 100 : 0; r._type = classifyPost(r['標題']);
+    r._er = r._reach > 0 ? (r._engage / r._reach) * 100 : 0;
     try {
       const raw = r['發佈時間'] || ''; const parts = raw.split(' ')[0].split('/');
       if (parts.length === 3) { r._month = parseInt(parts[0])+'月'; r._hour = parseInt((raw.split(' ')[1]||'0').split(':')[0]); r._dow = new Date(`${parts[2]}-${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}`).getDay(); }
@@ -324,47 +274,34 @@ function processCSVData(rawRows) {
   const mMap = {}; rows.forEach(r => { if(!r._month)return; mMap[r._month] = mMap[r._month] || []; mMap[r._month].push(r._reach); });
   const monthly = Object.entries(mMap).map(([m,arr])=>({ m, avg_reach: arr.reduce((a,b)=>a+b,0)/arr.length }));
 
-  const tMap = {}; Object.keys(TYPE_COLORS).forEach(k => tMap[k] = []); rows.forEach(r => { if(tMap[r._type]) tMap[r._type].push(r); });
-  const types = Object.entries(tMap).map(([name, list]) => ({ name, count: list.length, avg_reach: list.length ? list.reduce((s,r)=>s+r._reach,0)/list.length : 0, avg_er: list.length ? list.reduce((s,r)=>s+r._er,0)/list.length : 0, avg_share: list.length ? list.reduce((s,r)=>s+r._share,0)/list.length : 0 })).sort((a,b)=>b.avg_reach - a.avg_reach);
-
-  const top_posts = [...rows].sort((a,b)=>b._reach-a._reach).slice(0,15).map(r=>({ title: r['標題'], reach: r._reach, share: r._share, er: r._er, type: r._type }));
+  const top_posts = [...rows].sort((a,b)=>b._reach-a._reach).slice(0,15).map(r=>({ title: r['標題'], reach: r._reach, share: r._share, er: r._er }));
   const dMap = {}; rows.forEach(r => { if(r._dow===undefined||isNaN(r._dow))return; dMap[r._dow] = dMap[r._dow] || []; dMap[r._dow].push(r._reach); });
   const dowNames = ['日','一','二','三','四','五','六']; const dowAvgs = Object.entries(dMap).map(([d,arr])=>({ name: dowNames[parseInt(d)], avg: arr.reduce((a,b)=>a+b,0)/arr.length }));
   const hMap = {}; rows.forEach(r => { if(r._hour===undefined||isNaN(r._hour))return; hMap[r._hour] = hMap[r._hour] || []; hMap[r._hour].push(r._reach); });
   const hourAvgs = Object.entries(hMap).map(([h,arr])=>({ h: parseInt(h), avg: arr.reduce((a,b)=>a+b,0)/arr.length })).sort((a,b)=>a.h-b.h);
 
-  const insights = [];
-  const bestType = types[0];
-  if(bestType && bestType.count > 0) {
-    insights.push({ type:'s', title:`當前最熱門的受眾側寫：${bestType.name}`, body: `平均成效達 ${Math.round(bestType.avg_reach).toLocaleString()}，此類別內容共鳴度最佳。` });
-  }
-  const highShare = [...types].sort((a,b)=>b.avg_share-a.avg_share)[0];
-  if(highShare && highShare.count > 0) {
-    insights.push({ type:'i', title:`擴散傳播力最強題材：${highShare.name}`, body: `平均每篇獲得 ${Math.round(highShare.avg_share)} 次分享。` });
-  }
-  if (isReelsVideo) {
-    insights.push({ type: 'i', title: '短影音 Reels 跨日去重加總成功', body: '已將多天重複影片進行完整累積計算。' });
-  }
+  const insights = [
+    { type: 's', title: isReelsVideo ? '短影音 Reels 模式解析成功' : '一般圖文貼文解析成功', body: `本批數據共計包含 ${total} 個不重複的主題。` },
+    { type: 'i', title: '頂級成效推力', body: `成效最高的一篇主題獲得了高達 ${max_reach.toLocaleString()} ${isReelsVideo?'秒觀看':'觸及人數'}。` }
+  ];
 
-  return { isReelsVideo, total, avg_reach: Math.round(avg_reach), avg_er: Math.round(avg_er*100)/100, avg_share: Math.round(avg_share*10)/10, max_reach, monthly, types, top_posts, dowAvgs, hourAvgs, insights };
+  return { isReelsVideo, total, avg_reach: Math.round(avg_reach), avg_er: Math.round(avg_er*100)/100, avg_share: Math.round(avg_share*10)/10, max_reach, monthly, top_posts, dowAvgs, hourAvgs, insights };
 }
 
 function renderDashboard(data) {
   const lblReach = data.isReelsVideo ? '平均觀看時間 (秒)' : '平均觸及人數';
   const lblMax = data.isReelsVideo ? '單篇最高觀看 (秒)' : '單篇最高觸及';
-  const lblChart = data.isReelsVideo ? '月度影片觀看熱度 (秒)' : '月度觸及趨勢圖';
-  const lblBars = data.isReelsVideo ? '五大潛在受眾原型 (依觀看秒數)' : '五大潛在受眾與原型分析 (依觸及)';
+  const lblChart = data.isReelsVideo ? '月度影片觀看累積趨勢 (秒)' : '月度觸及趨勢圖';
 
   document.getElementById('trendTitle').textContent = lblChart;
-  document.getElementById('barsTitle').textContent = lblBars;
   document.getElementById('allTopReachTitle').textContent = data.isReelsVideo ? '觀看秒數排行' : '觸及人數排行';
-  document.getElementById('currentPeriod').textContent = `自訂上傳數據庫 (${data.total} 個獨立主題)`;
+  document.getElementById('currentPeriod').textContent = `自訂數據庫 (${data.total} 組內容)`;
   
   const kpis = [
-    { label: lblReach, val: data.avg_reach.toLocaleString(), sub: '社群基礎影響力' },
+    { label: lblReach, val: data.avg_reach.toLocaleString(), sub: '帳號基礎影響力' },
     { label: '平均互動率', val: data.avg_er + '%', sub: '受眾黏著度指標' },
-    { label: '平均分享數', val: data.avg_share, sub: '大眾擴散傳播力' },
-    { label: lblMax, val: data.max_reach.toLocaleString(), sub: '成效上限極限' }
+    { label: '平均分享數', val: data.avg_share, sub: '大眾傳播擴散力' },
+    { label: lblMax, val: data.max_reach.toLocaleString(), sub: '爆款極限峰值' }
   ];
   document.getElementById('kpiGrid').innerHTML = kpis.map(k => `
     <div class="kpi-card">
@@ -381,22 +318,12 @@ function renderDashboard(data) {
     options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
   });
 
-  const maxR = Math.max(...data.types.map(t=>t.avg_reach), 1);
-  document.getElementById('typeReachBars').innerHTML = data.types.map(t => `
-    <div class="bar-row">
-      <div class="bar-label">${t.name}</div>
-      <div class="bar-bg"><div class="bar-fill" style="width:${Math.round(t.avg_reach/maxR*100)}%;background:${TYPE_COLORS[t.name]};"></div></div>
-      <div class="bar-val">${Math.round(t.avg_reach).toLocaleString()}</div>
-    </div>`).join('');
-
   document.getElementById('topReachList').innerHTML = data.top_posts.slice(0,5).map((p,i)=>`
     <div class="post-row">
       <div class="post-rank">${i+1}</div>
       <div class="post-body">
         <div class="post-title">${p.title}</div>
-        <div class="post-meta">${data.isReelsVideo?'觀看':'觸及'} ${p.reach.toLocaleString()} ｜ 分享 ${p.share}
-          <span class="tag" style="background:${TYPE_COLORS[p.type]}22;color:${TYPE_COLORS[p.type]}">${p.type}</span>
-        </div>
+        <div class="post-meta">${data.isReelsVideo?'觀看':'觸及'} ${p.reach.toLocaleString()} ｜ 分享 ${p.share}</div>
       </div>
     </div>`).join('');
 
@@ -418,29 +345,13 @@ function renderStrategy(data) {
     return `<div class="cal-day ${cls}"><div class="day-name">週${d}</div><div class="day-reach">${v ? Math.round(v/100)/10+'k' : '—'}</div></div>`;
   }).join('');
 
-  const cardsHTML = data.types.map(t => {
-    const meta = STRAT_META[t.name] || STRAT_META['綜合大眾/其他公告'];
-    return `
-      <div class="strat-card">
-        <div class="strat-card-icon" style="background:${meta.bg};color:${meta.color}">${meta.icon}</div>
-        <div class="strat-card-body">
-          <div class="strat-card-title">${t.name} <span class="badge-hot">均成效: ${Math.round(t.avg_reach).toLocaleString()}</span></div>
-          <div class="strat-card-desc" style="margin-top:6px;">
-            <strong>建議開頭金句句型：</strong><br><span style="color:var(--text);font-style:italic;">${meta.hook}</span><br><br>
-            <strong>心理學擴散邏輯：</strong> ${meta.method}
-          </div>
-        </div>
-      </div>`;
-  }).join('');
-
   document.getElementById('stratContent').innerHTML = `
-    <div class="strat-hero"><h3>五大核心受眾 × 心理學爆文指南</h3><p>系統已自動排定受眾成效。越上方代表成效越佳。</p></div>
+    <div class="strat-hero"><h3>最佳發文窗口分析指南</h3><p>系統已自動依據您上傳的數據，彙整成效表現最佳的日期與時間窗口。</p></div>
     <div class="strat-section-title">星期發文效果熱力圖</div>
     <div class="grid2">
-      <div class="card"><div class="card-title">最適合發文的日期</div><div class="calendar-week">${calHTML}</div></div>
+      <div class="card"><div class="card-title">成效權重表現星期</div><div class="calendar-week">${calHTML}</div></div>
       <div class="card"><div class="card-title">時段最佳發文窗口分析</div><div style="height:120px;"><canvas id="hourChart"></canvas></div></div>
-    </div>
-    <div class="strat-section-title">五大受眾定位與文案調配方針</div>${cardsHTML}`;
+    </div>`;
 
   setTimeout(() => {
     if(hourChartInst) hourChartInst.destroy();
@@ -461,9 +372,7 @@ function renderPostsPage(data) {
         <div class="post-rank">${i+1}</div>
         <div class="post-body">
           <div class="post-title">${p.title}</div>
-          <div class="post-meta">${label}: ${p[field].toLocaleString()}
-            <span class="tag" style="background:${TYPE_COLORS[p.type]}22;color:${TYPE_COLORS[p.type]}">${p.type}</span>
-          </div>
+          <div class="post-meta">${label}: ${p[field].toLocaleString()}</div>
         </div>
       </div>`).join('');
   }
