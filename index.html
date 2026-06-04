@@ -3,505 +3,103 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 社群數據跨期分析中心</title>
+<title>社群數據自動分析中心</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #F9F8F6;
-    --surface: #FFFFFF;
-    --surface2: #F3F1ED;
-    --border: #E6E1DA;
-    --text: #1C1917;
-    --text2: #6B6560;
-    --text3: #A09990;
-    --purple: #7C62A3;
-    --purple-l: #F1EDF7;
-    --purple-d: #4A3766;
-    --teal: #23856D;
-    --teal-l: #E6F5F1;
-    --coral: #CC5A37;
-    --coral-l: #FBF0ED;
-    --amber: #B87814;
-    --amber-l: #FBF3E6;
-    --blue: #226CA8;
-    --blue-l: #EAF2F9;
-    --r-sm: 8px;
-    --r-md: 12px;
-    --r-lg: 16px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #F9F8F6; --surface: #FFFFFF; --purple: #7C62A3; --border: #E6E1DA; --text: #1C1917; }
   body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-
-  .sidebar { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background: var(--text); color: #fff; display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
-  .sidebar-logo { padding: 24px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-  .sidebar-logo h1 { font-family: 'DM Serif Display', serif; font-size: 18px; color: #fff; line-height: 1.3; }
-  .sidebar-logo p  { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 3px; }
-  .sidebar-nav { flex: 1; padding: 12px 0; }
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 13px; color: rgba(255,255,255,0.6); cursor: pointer; border-left: 3px solid transparent; transition: all .15s; }
-  .nav-item:hover { color: #fff; background: rgba(255,255,255,0.07); }
-  .nav-item.active { color: #fff; border-left-color: var(--purple); background: rgba(124,98,163,0.2); }
-  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
-  .nav-section { font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: .08em; padding: 16px 20px 6px; }
-  
-  .main { margin-left: 220px; min-height: 100vh; }
-  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
-  .topbar h2 { font-size: 16px; font-weight: 500; }
-  .content { padding: 28px 32px; }
-
-  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 16px 18px; }
-  .kpi-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
-  .kpi-val   { font-size: 24px; font-weight: 300; color: var(--text); letter-spacing: -.5px; line-height: 1; }
-  .kpi-sub   { font-size: 12px; color: var(--text3); margin-top: 5px; }
-  
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; margin-bottom: 20px; }
-  .card-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-  .post-row { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
-  .post-row:last-child { border-bottom: none; }
-  .post-rank { font-size: 14px; font-weight: 300; color: var(--text3); flex: 0 0 24px; }
-  .post-body { flex: 1; min-width: 0; }
-  .post-title { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .post-meta  { font-size: 11px; color: var(--text3); margin-top: 2px; }
-
-  .insight { border-radius: var(--r-sm); padding: 12px 14px; margin-bottom: 8px; border-left: 3px solid; }
-  .insight-title { font-size: 12px; font-weight: 500; margin-bottom: 3px; }
-  .insight-body  { font-size: 12px; color: var(--text2); line-height: 1.6; }
-  .insight-s { background: var(--green-l); border-color: var(--teal); }
-  .insight-s .insight-title { color: var(--teal); }
-  .insight-i { background: var(--blue-l);  border-color: var(--blue); }
-  .insight-i .insight-title { color: var(--blue); }
-
-  .upload-area { border: 2px dashed var(--border); border-radius: var(--r-lg); padding: 80px 20px; text-align: center; cursor: pointer; background: var(--surface); transition: all 0.2s; }
-  .upload-area.dragover { border-color: var(--purple); background: var(--purple-l); }
-  #fileInput { display: none; }
-
-  .strat-hero { background: linear-gradient(135deg, var(--purple-d) 0%, var(--purple) 60%, #9B7FD4 100%); border-radius: var(--r-lg); padding: 24px 32px; color: #fff; margin-bottom: 20px; }
-  .strat-hero h3 { font-size: 18px; font-weight: 500; margin-bottom: 4px; }
-  .strat-hero p  { font-size: 12px; opacity: .8; }
-  .strat-section-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: var(--text3); margin: 20px 0 10px; }
-
-  .calendar-week { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; margin-top: 8px; }
-  .cal-day { border-radius: var(--r-sm); padding: 10px 4px; text-align: center; border: 1px solid var(--border); background: var(--surface); font-size: 11px; }
-  .cal-day .day-name { color: var(--text3); margin-bottom: 4px; }
-  .cal-day .day-reach { font-size: 12px; font-weight: 500; }
-  .cal-day.cal-best  { background: var(--purple); border-color: var(--purple); color: #fff; }
-  .cal-day.cal-best .day-name { color: rgba(255,255,255,0.7); }
-  .cal-day.cal-good  { background: var(--purple-l); border-color: var(--purple); color: var(--purple); }
-
+  .sidebar { position: fixed; width: 220px; height: 100vh; background: var(--text); color: #fff; padding: 20px; }
+  .main { margin-left: 220px; padding: 30px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .upload-area { border: 2px dashed var(--border); padding: 60px; text-align: center; cursor: pointer; border-radius: 12px; }
   .page { display: none; }
   .page.active { display: block; }
-  .empty-state { text-align: center; padding: 80px 20px; color: var(--text3); }
-  
-  .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); margin-bottom: 8px; font-size: 13px; }
 </style>
 </head>
 <body>
 
 <nav class="sidebar">
-  <div class="sidebar-logo">
-    <h1>社群數據<br>跨期分析中心</h1>
-    <p>FB Performance Hub</p>
-  </div>
-  <div class="sidebar-nav">
-    <div class="nav-section">分析</div>
-    <div class="nav-item active" onclick="showPage('dashboard')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      <span>社群總覽儀表板</span>
-    </div>
-    <div class="nav-item" onclick="showPage('strategy')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      <span>最佳發文窗口指南</span>
-    </div>
-    <div class="nav-item" onclick="showPage('compare')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      <span>跨期比對</span>
-    </div>
-    <div class="nav-item" onclick="showPage('posts')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      <span>完整爆文排行榜</span>
-    </div>
-    <div class="nav-section">資料</div>
-    <div class="nav-item" onclick="showPage('upload')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-      <span>上傳新數據 (CSV)</span>
-    </div>
-    <div class="nav-item" onclick="showPage('history')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      <span>歷史記錄</span>
-    </div>
+  <h1>分析中心</h1>
+  <div style="margin-top:20px;">
+    <div class="nav-item" onclick="showPage('dashboard')">總覽儀表板</div>
+    <div class="nav-item" onclick="showPage('upload')">上傳數據 (CSV)</div>
   </div>
 </nav>
 
 <div class="main">
-  <div class="topbar">
-    <h2 id="pageTitle">總覽儀表板</h2>
-    <div class="topbar-right">
-      <span id="currentPeriod" style="font-size:12px;color:var(--text3);">尚未匯入數據</span>
+  <div id="page-dashboard" class="page active">
+    <div class="card">
+      <h2 id="statsTitle">請上傳數據以開始分析</h2>
+      <div id="statsContent"></div>
     </div>
   </div>
 
-  <div class="content">
-    <div id="emptyContainer" class="card empty-state">
-      <h3>目前網頁內沒有任何數據資料</h3>
-      <p style="margin-top:8px;font-size:13px;color:var(--text2);">請先至選單點選「上傳新數據」，將您從臉書後台下載的 CSV 放進來。</p>
-    </div>
-
-    <div id="mainAppContent" style="display:none;">
-      <div id="page-dashboard" class="page active">
-        <div class="kpi-grid" id="kpiGrid"></div>
-        <div class="grid2">
-          <div class="card" style="grid-column: span 2;">
-            <div class="card-title" id="trendTitle">趨勢變化圖</div>
-            <div style="height:220px;"><canvas id="trendChart"></canvas></div>
-          </div>
-        </div>
-        <div class="grid2">
-          <div class="card">
-            <div class="card-title">成效最優前 5 名</div>
-            <div id="topReachList"></div>
-          </div>
-          <div class="card">
-            <div class="card-title">AI 社群數據簡報洞察</div>
-            <div id="insightsList"></div>
-          </div>
-        </div>
-      </div>
-
-      <div id="page-strategy" class="page">
-        <div id="stratContent"></div>
-      </div>
-
-      <div id="page-compare" class="page">
-        <div class="card">
-          <div class="card-title">跨月份數據對比</div>
-          <div style="height:260px;"><canvas id="compareChart"></canvas></div>
-        </div>
-      </div>
-
-      <div id="page-posts" class="page">
-        <div class="grid2">
-          <div class="card">
-            <div class="card-title" id="allTopReachTitle">成效總量排行</div>
-            <div id="allTopReach"></div>
-          </div>
-          <div class="card">
-            <div class="card-title">轉發分享次數排行</div>
-            <div id="allTopShare"></div>
-          </div>
-        </div>
-      </div>
-      
-      <div id="page-history" class="page">
-        <div class="card">
-          <div class="card-title">本地歷史快取包</div>
-          <div id="historyList"></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="page-upload" class="page">
-      <div style="max-width:600px;">
-        <div class="upload-area" id="uploadArea">
-          <h3>將 FB 後台數據 CSV 拖曳至此</h3>
-          <p style="margin-top:8px;color:var(--text3);font-size:13px;">支援全系列：標準貼文摘要報表、短影音 Reels 每日明細報表</p>
-          <input type="file" id="fileInput" accept=".csv">
-        </div>
-      </div>
+  <div id="page-upload" class="page">
+    <div class="card">
+      <div class="upload-area" id="uploadArea">拖曳 CSV 至此 或 點擊上傳</div>
+      <input type="file" id="fileInput" accept=".csv" style="display:none">
     </div>
   </div>
 </div>
 
 <script>
-const STORE_KEY = 'universal_complete_dash_v7_final'; 
-let trendChartInst = null; let hourChartInst = null; let compareChartInst = null;
-
-function loadData() {
-  try { return JSON.parse(localStorage.getItem(STORE_KEY)); } catch(e) { return null; }
-}
-
 function parseCSV(text) {
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-  if (lines.length < 2) return [];
-  
-  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g,'').trim());
+  const lines = []; let row = [], cur = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') { if (inQ && text[i+1] === '"') { cur += '"'; i++; } else { inQ = !inQ; } }
+    else if (c === ',' && !inQ) { row.push(cur.trim()); cur = ''; }
+    else if ((c === '\r' || c === '\n') && !inQ) {
+      if (c === '\r' && text[i+1] === '\n') i++;
+      row.push(cur.trim()); if(row.some(x=>x)) lines.push(row);
+      row = []; cur = '';
+    } else { cur += c; }
+  }
+  const headers = lines[0].map(h => h.replace(/^"|"$/g,'').trim());
   return lines.slice(1).map(line => {
-    const vals = []; let cur = ''; let inQ = false;
-    for (const c of line) {
-      if (c === '"') inQ = !inQ;
-      else if (c === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
-      else cur += c;
-    }
-    vals.push(cur.trim());
-    const obj = {}; headers.forEach((h, i) => obj[h] = (vals[i]||'').replace(/^"|"$/g,'').trim());
+    const obj = {}; headers.forEach((h, i) => obj[h] = line[i] || '');
     return obj;
   });
 }
 
-function n(v) { return parseFloat(String(v).replace(/,/g,'')) || 0; }
-
-function processCSVData(rawRows) {
-  let isReelsVideo = false;
-  let rows = [];
-
-  // 🧠 【終極防卡死邏輯：自動修補標題】
-  rawRows.forEach(r => {
-    // 如果「標題」是空的，自動用「說明」或「貼文」補位，再沒有就寫「未命名貼文」
-    let rawTitle = r['標題'] || r['說明'] || r['貼文內容'] || r['貼文'] || '';
-    r._cleanTitle = rawTitle.split('\n')[0].substring(0, 40).trim() || '（未命名貼文/影片）';
-  });
-
-  // 判斷報表類型
-  if (rawRows.length > 0 && !rawRows.some(r => r['觸及人數']) && rawRows.some(r => r['觀看秒'])) {
-    isReelsVideo = true;
-    const grouped = {};
-    rawRows.forEach(r => {
-      const title = r._cleanTitle;
-      if (!grouped[title]) {
-        grouped[title] = { title, watch_sec: 0, mood: 0, comment: 0, share: 0, time: r['發佈時間'] || r['發布時間'] || '' };
-      }
-      grouped[title].watch_sec += n(r['觀看秒']);
-      grouped[title].mood += n(r['心情數'] || r['心情'] || 0);
-      grouped[title].comment += n(r['留言'] || 0);
-      grouped[title].share += n(r['分享'] || 0);
-    });
-    rows = Object.values(grouped).map(g => ({
-      _title: g.title,
-      _reach: g.watch_sec,
-      _engage: g.mood + g.comment + g.share,
-      _share: g.share,
-      _time: g.time
-    }));
-  } else {
-    // 標準貼文，過濾出只要有數據發佈時間或不為空的項目
-    rawRows.forEach(r => {
-      r._title = r._cleanTitle;
-      r._reach = n(r['觸及人數'] || r['觸及'] || r['Reach'] || 0);
-      r._engage = n(r['心情、留言和分享次數'] || r['互動次數'] || r['Engagement'] || 0);
-      r._share = n(r['分享'] || r['Shares'] || 0);
-      r._time = r['發佈時間'] || r['發布時間'] || '';
-    });
-    rows = rawRows.filter(r => r._reach > 0 || r._title !== '（未命名貼文/影片）');
-  }
-
-  // 統一解析日期與時間
-  rows.forEach(r => {
-    r._er = r._reach > 0 ? (r._engage / r._reach) * 100 : 0;
-    try {
-      const raw = r._time;
-      const datePart = raw.split(' ')[0];
-      const parts = datePart.includes('/') ? datePart.split('/') : datePart.split('-');
-      if (parts.length === 3) {
-        // 兼容 MM/DD/YYYY 或 YYYY-MM-DD
-        let m = parts[0].length <= 2 ? parseInt(parts[0]) : parseInt(parts[1]);
-        r._month = m + '月';
-        
-        let timePart = raw.split(' ')[1] || '00:00';
-        r._hour = parseInt(timePart.split(':')[0]);
-        
-        // 算出星期幾
-        let y = parts[2].length === 4 ? parts[2] : parts[0];
-        let d = parts[1].length <= 2 ? parts[1] : parts[2];
-        if(String(y).length !== 4) { y = parts[2]; d = parts[1]; m = parts[0]; }
-        r._dow = new Date(`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`).getDay();
-      }
-    } catch(e){}
-  });
-
-  const total = rows.length;
-  if(total === 0) return null;
-
-  const avg_reach = rows.reduce((s,r)=>s+r._reach,0)/total;
-  const avg_er = rows.reduce((s,r)=>s+r._er,0)/total;
-  const avg_share = rows.reduce((s,r)=>s+r._share,0)/total;
-  const max_reach = Math.max(...rows.map(r=>r._reach), 0);
-
-  const mMap = {}; rows.forEach(r => { if(!r._month)return; mMap[r._month] = mMap[r._month] || []; mMap[r._month].push(r._reach); });
-  const monthly = Object.entries(mMap).map(([m,arr])=>({ m, avg_reach: arr.reduce((a,b)=>a+b,0)/arr.length })).sort((a,b)=>parseInt(a.m)-parseInt(b.m));
-
-  const top_posts = [...rows].sort((a,b)=>b._reach-a._reach).slice(0,15).map(r=>({ title: r._title, reach: r._reach, share: r._share, er: r._er }));
-  const dMap = {}; rows.forEach(r => { if(r._dow===undefined||isNaN(r._dow))return; dMap[r._dow] = dMap[r._dow] || []; dMap[r._dow].push(r._reach); });
-  const dowNames = ['日','一','二','三','四','五','六']; const dowAvgs = Object.entries(dMap).map(([d,arr])=>({ name: dowNames[parseInt(d)], avg: arr.reduce((a,b)=>a+b,0)/arr.length }));
-  const hMap = {}; rows.forEach(r => { if(r._hour===undefined||isNaN(r._hour))return; hMap[r._hour] = hMap[r._hour] || []; hMap[r._hour].push(r._reach); });
-  const hourAvgs = Object.entries(hMap).map(([h,arr])=>({ h: parseInt(h), avg: arr.reduce((a,b)=>a+b,0)/arr.length })).sort((a,b)=>a.h-b.h);
-
-  const insights = [
-    { type: 's', title: isReelsVideo ? '短影音 Reels 模式完美解析' : '標準貼文成效模型建立成功', body: `本批次共成功抓取了 ${total} 篇不重複的發文明細。` },
-    { type: 'i', title: '頂級成效峰值點', body: `成效最高的一篇內容斬獲了高達 ${max_reach.toLocaleString()} ${isReelsVideo?'秒觀看時間':'觸及人數'}。` }
-  ];
-
-  return { isReelsVideo, total, avg_reach: Math.round(avg_reach), avg_er: Math.round(avg_er*100)/100, avg_share: Math.round(avg_share*10)/10, max_reach, monthly, top_posts, dowAvgs, hourAvgs, insights, uploadTime: new Date().toLocaleString() };
-}
-
-function renderDashboard(data) {
-  const lblReach = data.isReelsVideo ? '平均觀看時間 (秒)' : '平均觸及人數';
-  const lblMax = data.isReelsVideo ? '單篇最高觀看 (秒)' : '單篇最高觸及';
-  document.getElementById('trendTitle').textContent = data.isReelsVideo ? '月度影片觀看累積趨勢 (秒)' : '月度觸及趨勢圖';
-  document.getElementById('allTopReachTitle').textContent = data.isReelsVideo ? '觀看秒數排行' : '觸及人數排行';
-  document.getElementById('currentPeriod').textContent = `自訂上傳數據庫 (${data.total} 筆項目)`;
+// 核心聰明解析：自動掃描正確欄位
+function processCSV(rawRows) {
+  const findCol = (row, candidates) => candidates.find(c => row.hasOwnProperty(c) || Object.keys(row).some(k => k.includes(c))) || Object.keys(row).find(k => candidates.some(cand => k.includes(cand)));
   
-  const kpis = [
-    { label: lblReach, val: data.avg_reach.toLocaleString(), sub: '帳號基礎影響力' },
-    { label: '平均互動率', val: data.avg_er + '%', sub: '受眾黏著度指標' },
-    { label: '平均分享數', val: data.avg_share, sub: '大眾傳播擴散力' },
-    { label: lblMax, val: data.max_reach.toLocaleString(), sub: '爆發上限極限值' }
-  ];
-  document.getElementById('kpiGrid').innerHTML = kpis.map(k => `
-    <div class="kpi-card">
-      <div class="kpi-label">${k.label}</div>
-      <div class="kpi-val">${k.val}</div>
-      <div class="kpi-sub">${k.sub}</div>
-    </div>`).join('');
-
-  if(trendChartInst) trendChartInst.destroy();
-  const ctx = document.getElementById('trendChart').getContext('2d');
-  trendChartInst = new Chart(ctx, {
-    type: 'line',
-    data: { labels: data.monthly.map(m=>m.m), datasets: [{ data: data.monthly.map(m=>Math.round(m.avg_reach)), borderColor:'#7C62A3', backgroundColor:'rgba(124,98,163,0.05)', fill:true, tension:0.3 }] },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
-  });
-
-  document.getElementById('topReachList').innerHTML = data.top_posts.slice(0,5).map((p,i)=>`
-    <div class="post-row">
-      <div class="post-rank">${i+1}</div>
-      <div class="post-body">
-        <div class="post-title">${p.title}</div>
-        <div class="post-meta">${data.isReelsVideo?'觀看':'觸及'} ${p.reach.toLocaleString()} ｜ 分享 ${p.share}</div>
-      </div>
-    </div>`).join('');
-
-  document.getElementById('insightsList').innerHTML = data.insights.map(ins => `
-    <div class="insight insight-${ins.type}">
-      <div class="insight-title">${ins.title}</div>
-      <div class="insight-body">${ins.body}</div>
-    </div>`).join('');
+  const processed = rawRows.map(r => {
+    const titleCol = findCol(r, ['標題', '說明', '貼文', '貼文內容']);
+    let title = r[titleCol] || '未命名內容';
+    // 嚴格過濾掉網址當標題
+    if(title.includes('http')) title = '內容摘要';
+    
+    return {
+      title: title.substring(0, 30),
+      reach: parseFloat(r[findCol(r, ['觸及人數', '觸及', 'Reach', '觀看秒'])] || 0),
+      share: parseFloat(r[findCol(r, ['分享', 'Shares'])] || 0)
+    };
+  }).filter(r => r.reach > 0);
+  
+  return processed;
 }
 
-function renderStrategy(data) {
-  const calDays = ['一','二','三','四','五','六','日'];
-  const dayMap = {}; data.dowAvgs.forEach(d => dayMap[d.name] = d.avg);
-  const maxDay = Math.max(...Object.values(dayMap), 1);
-
-  const calHTML = calDays.map(d => {
-    const v = dayMap[d] || 0; const ratio = v / maxDay;
-    const cls = ratio >= 0.85 ? 'cal-best' : ratio >= 0.5 ? 'cal-good' : '';
-    return `<div class="cal-day ${cls}"><div class="day-name">週${d}</div><div class="day-reach">${v ? Math.round(v/100)/10+'k' : '—'}</div></div>`;
-  }).join('');
-
-  document.getElementById('stratContent').innerHTML = `
-    <div class="strat-hero"><h3>最佳發文窗口分析指南</h3><p>大數據已解鎖。提供最符合您現有受眾分布的發文時間建議。</p></div>
-    <div class="strat-section-title">星期發文效果熱力圖</div>
-    <div class="grid2">
-      <div class="card"><div class="card-title">成效權重星期分布</div><div class="calendar-week">${calHTML}</div></div>
-      <div class="card"><div class="card-title">24小時最佳發文時段分佈</div><div style="height:120px;"><canvas id="hourChart"></canvas></div></div>
-    </div>`;
-
-  setTimeout(() => {
-    if(hourChartInst) hourChartInst.destroy();
-    const hCtx = document.getElementById('hourChart').getContext('2d');
-    hourChartInst = new Chart(hCtx, {
-      type: 'bar',
-      data: { labels: data.hourAvgs.map(h=>h.h+':00'), datasets: [{ data: data.hourAvgs.map(h=>Math.round(h.avg)), backgroundColor:'#7C62A3', borderRadius:4 }] },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
-    });
-  }, 50);
-}
-
-function renderComparePage(data) {
-  setTimeout(() => {
-    if(compareChartInst) compareChartInst.destroy();
-    const cCtx = document.getElementById('compareChart').getContext('2d');
-    compareChartInst = new Chart(cCtx, {
-      type: 'bar',
-      data: { labels: data.monthly.map(m=>m.m), datasets: [{ label: data.isReelsVideo ? '平均觀看(秒)' : '平均觸及', data: data.monthly.map(m=>Math.round(m.avg_reach)), backgroundColor:'#23856D', borderRadius:4 }] },
-      options: { responsive:true, maintainAspectRatio:false }
-    });
-  }, 50);
-}
-
-function renderPostsPage(data) {
-  const byShare = [...data.top_posts].sort((a,b)=>b.share-a.share);
-  function postListHTML(list, label, field) {
-    return list.map((p,i)=>`
-      <div class="post-row">
-        <div class="post-rank">${i+1}</div>
-        <div class="post-body">
-          <div class="post-title">${p.title}</div>
-          <div class="post-meta">${label}: ${p[field].toLocaleString()}</div>
-        </div>
-      </div>`).join('');
-  }
-  document.getElementById('allTopReach').innerHTML = postListHTML(data.top_posts, data.isReelsVideo ? '觀看秒數' : '觸及人數', 'reach');
-  document.getElementById('allTopShare').innerHTML = postListHTML(byShare, '分享次數', 'share');
-}
-
-function renderHistoryPage(data) {
-  document.getElementById('historyList').innerHTML = `
-    <div class="history-item">
-      <div><strong>上傳時間：</strong> ${data.uploadTime || '未知'} ｜ <strong>資料量：</strong> ${data.total} 組主題 (${data.isReelsVideo?'短影音':'圖文貼文'})</div>
-      <button onclick="clearHistory()" style="background:#B23B3B;color:#fff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;">清除快取</button>
-    </div>`;
-}
-
-function clearHistory() {
-  localStorage.removeItem(STORE_KEY);
-  initApp();
-}
-
-function handleFile(file) {
-  if (!file) return;
+document.getElementById('uploadArea').addEventListener('click', () => document.getElementById('fileInput').click());
+document.getElementById('fileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
   const reader = new FileReader();
-  reader.onload = evt => {
-    const rows = parseCSV(evt.target.result); if(rows.length === 0) return;
-    const processed = processCSVData(rows);
-    if(!processed) { alert("此檔案內無有效社群數據數據！"); return; }
-    localStorage.setItem(STORE_KEY, JSON.stringify(processed));
-    initApp(); showPage('dashboard');
+  reader.onload = e => {
+    const data = processCSV(parseCSV(e.target.result));
+    document.getElementById('statsContent').innerText = `成功匯入 ${data.length} 筆貼文，總觸及：${data.reduce((a,b)=>a+b.reach, 0)}`;
+    document.getElementById('statsTitle').innerText = "分析完成";
+    showPage('dashboard');
   };
   reader.readAsText(file, 'UTF-8');
-}
-
-// 🎯 【電腦拖曳攔截防護盾】
-const uploadArea = document.getElementById('uploadArea');
-if(uploadArea) {
-  uploadArea.addEventListener('click', () => document.getElementById('fileInput').click());
-  window.addEventListener('dragover', e => e.preventDefault(), false);
-  window.addEventListener('drop', e => e.preventDefault(), false);
-  uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); }, false);
-  uploadArea.addEventListener('dragleave', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); }, false);
-  uploadArea.addEventListener('drop', e => {
-    e.preventDefault(); uploadArea.classList.remove('dragover');
-    const files = e.dataTransfer.files; if (files.length > 0) { handleFile(files[0]); }
-  }, false);
-}
-
-document.getElementById('fileInput').addEventListener('change', e => { handleFile(e.target.files[0]); });
+});
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  const nav = document.querySelector(`[onclick="showPage('${id}')"]`); if(nav) nav.classList.add('active');
-  
-  const titles = { dashboard: '社群總覽儀表板', strategy: '最佳發文窗口指南', compare: '跨期比對', posts: '完整爆文排行榜', upload: '上傳新數據', history: '歷史記錄' };
-  document.getElementById('pageTitle').textContent = titles[id] || '儀表板';
 }
-
-function initApp() {
-  const data = loadData();
-  if (data) {
-    document.getElementById('emptyContainer').style.display = 'none';
-    document.getElementById('mainAppContent').style.display = 'block';
-    renderDashboard(data); renderStrategy(data); renderComparePage(data); renderPostsPage(data); renderHistoryPage(data);
-  } else {
-    document.getElementById('emptyContainer').style.display = 'block';
-    document.getElementById('mainAppContent').style.display = 'none';
-    document.getElementById('currentPeriod').textContent = '尚未匯入數據';
-  }
-}
-initApp();
 </script>
 </body>
 </html>
